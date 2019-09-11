@@ -1,0 +1,209 @@
+Seguindo o tutorial do Python
+
+
+Step 1
+
+- Para o tutorial, optei por usar o Pipenv, assim, criei um diretório em que hospedaria meu projeto tutorial
+
+- Dentro desse diretório, utilizei o comando abaixo para definir a versão do Python para esse projeto:
+
+$ pyenv local 3.7.0
+
+- Com a versão do Python definida, o próximo passo foi criar um ambiente virtual para isolar o ambiente para desenvolvimento do projeto, para isso executei o comando abaixo:
+
+$ pipenv shell
+
+Após esse comando foi isolado um ambiente Python com a versão 3.7.0 e gerado os arquivos Pipfile e Pipfile.lock. Esses arquivos funcionam como uma espécie de pom.xml do maven, que armazena todas as dependências necessárias para desenvolvimento e execução do projeto. O mesmo comando é responsavél por ativar o ambiente quando o mesmo não estiver ativo.
+
+- Tendo um ambiente, agora é onde usamos o pipenv para baixar e instalar as dependências do projeto. Pode ser feito com o comando abaixo:
+
+$ pipenv install django=="2.2" (TODO: Confirmar esse comando)
+
+- Com o django instalado, podemos checar a versão instalada com o comando:
+
+$ python -m django --version
+
+- Estando ok, usamos o comando abaixo para criar um projeto django:
+
+$ django-admin startproject mysite
+
+Esse comando irá gerar um projeto de nome 'mysite'
+
+- Notas importantes sobre a estrutura de diretórios em projeto Django:
+
+==========================================================================================================================================================================================================
+Esses arquivos são:
+
+    O arquivo mysite/ exterior é apenas um contêiner para o seu projeto. Seu nome não importa para Django; você pode renomeá-lo para qualquer nome que você quiser.
+
+    manage.py: Um utilitário de linha de comando que permite a você interagir com esse projeto Django de várias maneiras. Você pode ler todos os detalhes sobre o manage.py em django-admin and manage.py.
+
+    O arquivo mysite/ interior é o pacote Python para o seu projeto. Seu nome é o nome do pacote Python que você vai precisar usar para importar coisas do seu interior (por exemplo, mysite.urls).
+
+    mysite/__init__.py: Um arquivo vazio que diz ao Python que este diretório deve ser considerado um pacote Python. Se você é um iniciante Python, leia mais sobre pacotes na documentação oficial do Python.
+    
+    mysite/settings.py: Configurações para este projeto Django. Configurações do Django Irá revelar para você tudo sobre o funcionamento do settings.
+    
+    mysite/urls.py: As declarações de URLs para este projeto Django; um “índice” de seu site movido a Django. Você pode ler mais sobre URLs em Despachante de URL.
+    
+    mysite/wsgi.py: Um ponto de integração para servidores WEB compatíveis com WSGI usado para servir seu projeto. Veja Como implementar com WSGI para mais detalhes.
+==========================================================================================================================================================================================================
+
+- Com o projeto startado, usamos o comando abaixo para subir um leve servidor local para testarmos nosso projeto. Um servidor web embarcado no próprio django:
+
+$ python manage.py runserver
+
+A porta padrão é a 8000, caso queira alterá-la, podemos fazer isso, informando a nova porta por parâmetro:
+
+$ python manage.py runserver 8080
+
+
+### Criação do Projeto
+
+- Comando para criação da aplicação:
+
+$ python manage.py startapp polls
+
+- Após criar o projeto, adicionei uma nova view. Para isso criei um método no arquivo views.py.
+
+- Depois criei um arquivo chamado urls.py no diretório "polls" em que editei o arquivo views.py, adicionando uma nova view.
+
+- Ao criar o arquivo urls.py em "polls" é preciso adicionar essa nova url criada às listas de urls default da aplicação, localizada em:
+
+| <NOME_PROJETO>/<PACKAGE_PROJETO>/urls.py  
+
+
+
+Step 2
+
+
+No Step 2, iremos configurar a conexão a um banco de dados e entender como funciona o admin panel do Django.
+
+O arquivo settings.py (localizado na pasta mysite/mysite) é um módulo normal do Python com variáveis de módulo representando as configurações do Django.
+
+- Nesse arquivo ficam, por exemplo, os dados de acesso ao banco de dados.
+
+- Ficam também a descrição de todos os APPS instalados nessa instância do Django, em INSTALLED_APPS. Esses APPs requerem que algumas tabelas específicas existam no banco de dados.
+
+
+O comando abaixo é responsável por migrar (criar essas tabelas) que são necessárias para os itens descritos na seção INSTALLED_APPS dentor do arquivo settings.py.
+
+
+ $ python manage.py migrate
+
+
+** O comando migrate verifica a configuração em INSTALLED_APPS e cria qualquer tabela do banco de dados necessária de acordo com as configurações do banco de dados no seu arquivo mysite/settings.py e as migrações que venham com a ap
+
+
+Criando os Modelos 
+
+- Criar o mapeamento do modelo. Ver as entidades Question e Choice.
+
+- Com as entidades criadas, é necessários adicionar a aplicação ao projeto django, conforme mostrado abaixo:
+-- Para incluir a aplicação no nosso projeto, precisamos adicionar a referência à classe de configuração da aplicação na definição do INSTALLED_APPS . A classe PollsConfig``está no arquivo  :file:`polls/apps.py`, então seu caminha pontuado é ``'polls.apps.PollsConfig'. Edite o arquivo mysite/settings.py e adicione aquele caminho com notação de ponto a definição do INSTALLED_APPS.
+
+- Após adicionar a aplicação aos INSTALLED_APPES, executar o comando:
+
+$ python manage.py makemigrations polls
+
+A saída do comando será algo como:
+
+Migrations for 'polls':
+  polls/migrations/0001_initial.py:
+    - Create model Choice
+    - Create model Question
+    - Add field question to choice
+
+
+- Comando sqlmigrate:
+-- Gera um arquivo de migração SQL a partir do arquivo de migration informado.
+
+$ python manage.py sqlmigrate polls 0001
+
+** O Comando sqlmigrate não execute o script gerado, mas simplesmente gera o código sql do script para fácil visualização/inspeção.
+
+
+- Se você tiver interesse, você pode rodar python manage.py check; Ele checa por problemas no seu projeto sem criar migrations ou tocar seu banco de dados.
+
+$ python manage.py check
+
+
+- Com o nosso model alterado, utilizados o migrate novamente para executar as novas alterações no domínio:
+
+$ python manage.py migrate
+
+** O comando migrate pega todas as migrações que ainda não foram aplicadas (Django rastreia quais foram aplicadas usando uma tabela especial em seu banco de dados chamada django_migrations) e aplica elas contra seu banco de dados - essencialmente, sincronizando as alterações feitas aos seus modelos com o esquema no banco de dados.
+
+
+Passos para a alterações feitas no domínio:
+   1. Mude seus modelos (em models.py).
+   2. Rode python manage.py makemigrations para criar migrações para suas modificações
+   3. Rode python manage.py migrate para aplicar suas modificações no banco de dados.
+
+
+Brincando com a API do django
+
+$ python manage.py shell
+
+
+
+Painel de Admin do Django
+
+$ python manage.py createsuperuser
+
+
+Registrando o model Question para CRUD no painel de Admin:
+
+- Editar o arquivo polls.admin.py:
+|
+| from django.contrib import admin
+| from .models import Question
+| admin.site.register(Question)
+
+
+
+Step 3
+
+
+Adicionando views ao projeto.
+
+Views são as páginas HTMLs do app, que são referenciados por uma função Python ou por métodos em caso de views baseada em classes.
+
+
+-- Criar um diretório 'templates' dentro do diretório da aplicação, no meu caso:
+
+| polls/templates/
+
+Nesse diretório, serão procurados os arquivos para a renderização das páginas devolvidas pela aplicação.
+
+- TEMPLATES:
+A sua configuração de projeto TEMPLATES descreve como o Django vai carregar e renderizar templates. O arquivo de configuração padrão usa o backend DjangoTemplates do qual a opção APP_DIRS é configurada como True. Por convenção DjangoTemplates` procura por um subdiretório “templates” em cada uma das INSTALLED_APPS.
+
+
+Step 4
+
+
+Criação de template de formulários
+
+request.POST é um objeto como dicionários que lhe permite acessar os dados submetidos pelos seus nomes chaves. Neste caso, request.POST['choice'] retorna o ID da opção selecionada, como uma string. Os valores de request.POST são sempre strings.
+
+Note que Django também fornece request.GET para acesar dados GET da mesma forma – mas nós estamos usando attr:request.POST <django.http.HttpRequest.POST> explicitamente no nosso código, para garantir que os dados só podem ser alterados por meio de uma chamada POST.
+
+request.POST['choice'] irá levantar a exceção KeyError caso uma choice não seja fornecida via dados POST. O código acima checa por KeyError e re-exibe o formulário da enquete com as mensagens de erro se uma choice não for fornecida.
+
+Após incrementar uma opção, o código retorna um class:~django.http.HttpResponseRedirect em vez de um normal HttpResponse. HttpResponseRedirect` recebe um único argumento: a URL para o qual o usuário será redirecionado (veja o ponto seguinte para saber como construímos a URL, neste caso).
+
+Como o comentário Python acima salienta, você deve sempre retornar uma HttpResponseRedirect depois de lidar com sucesso com dados POST. Esta dica não é específica do Django; mais sim uma boa prática para o desenvolvimento Web.
+
+Estamos usando a função reverse() no construtor da HttpResponseRedirect neste exemplo. Essa função nos ajuda a evitar de colocar a URL dentro da view de maneira literal. A ele é dado então o nome da “view” que queremos que ele passe o controle e a parte variável do padrão de formato da URL que aponta para a “view”. Neste caso, usando o URLconf nós definimos em Tutorial 3, esta chamada de reverse() irá retornar uma string como
+
+
+** Ler sobre: Avoiding race conditions using F()
+
+F() pode ser muito útil para performance, uma vez que ele delega que as ações sejam executadas diretamente pelo BD, sem ter que trazer os dados para a memória da aplicação, iterar sobre os dados, efetuar alguma ação e depois enviar de volta para o banco de dados.
+
+
+
+Step 5
+
+Testes automatizados
